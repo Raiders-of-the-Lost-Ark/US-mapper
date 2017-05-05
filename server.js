@@ -31,7 +31,7 @@ mongoose.Promise = global.Promise;
 
     // Create connections to the mongodb collecctions
 var sites = mongoose.createConnection('mongodb://localhost:27017/testsites');
-var users = mongoose.createConnection('mongodb://localhost:27017/testusers')
+var users = mongoose.createConnection('mongodb://localhost:27017/testusers');
 
     // Using the connection and the schema set up a model that we can use
     // to write to the database
