@@ -1,0 +1,386 @@
+<!-- 
+        siteinfo.ejs
+        All battlesite info that populates the info panel when a site is selected.
+
+        This template serves as a multi-purpose form for creating or editing sites
+        (depending on what booleans are switched on), and also a general viewing area
+        when "edit mode" is turned off.
+-->
+
+<% if (newMode) { %>
+    <% var edit = true; %>
+    <% var create = true; %>
+<% } else { %> 
+    <% var edit = false; %>
+    <% var create = false; %>
+    
+    <% var imgDir = "images/"; %>
+    <% var pic = imgDir + data.images; %>
+    <% var boxId = "img"; %> 
+<% } %>
+
+<style>
+    .editText:hover{
+        border-style: solid;
+        border-color: gray gray blue gray;
+    }
+</style>
+
+<!-- Viewable Mode -->
+
+<% if (!newMode) { %> 
+<div class="view-mode <% if (!edit && !create) { %> active <% } %>">
+    <% if (data.images && data.images.length != "") { %>
+        <div class="image-container">
+            <ul id="view_slider">
+                <% for (var n = 0; n < data.images.length; n++) { %> 
+                    <li> 
+                        <a href="#" onclick="showLightbox('<%= boxId + n %>')">
+                            <img class="sidebar-image" src="<%= data.images[n] %>" style="width:100%" />
+                        </a>
+                    </li>
+                <% } %> 
+            </ul>
+            <button id="viewPrevButton" onclick="viewPrevImage()" class="image-nav-button img-nav-left mdl-button mdl-js-button mdl-button--raised"><i class="material-icons">keyboard_arrow_left</i></button>
+            <button id="viewNextButton" onclick="viewNextImage()" class="image-nav-button img-nav-right mdl-button mdl-js-button mdl-button--raised"><i class="material-icons">keyboard_arrow_right</i></button>
+        </div>
+    <% } %>
+
+    <div class="sidebar-content">
+        <h3 class="site-name"><%= data.name %></h3>
+        <p class="site-paragraph"><%= data.misc %></p>
+        <div class="pdf-list">
+            <% if (data.pdf && data.pdf.length > 0) { %>
+                <h6>Associated files:</h6>
+                <ul class="mdl-list">
+                <% for (var n = 0; n < data.pdf.length; n++) { %>
+                    <% var isPublic = data.pdfview[n] %>
+                    <% if ( (isPublic) || (loggedin) ) { %>
+                        <a href="pdf/<%= data.pdf[n] %>" class="mdl-list__item <% if (!isPublic) { %> private <% } %>" target="_blank">
+                            <span class="mdl-list__item-primary-content">
+                                <i class="material-icons pdf-icon">picture_as_pdf</i>
+                                <%= data.pdf[n] %>
+                            </span>
+                            <span class="mdl-list__item-sub-title">
+                                <% if (!isPublic) { %> 
+                                    (Private) 
+                                <% } %>
+                            </span>
+                        </a>
+                        </li>
+                    <% } %>
+                <% } %>
+                </ul>
+            <% } %>
+        </div>
+        <span class="site-creator mdl-chip">
+            <span class="mdl-chip__text">
+                Created by: 
+                <span class="content-creator">
+                    <%= data.userFName + " " + data.userLName %>
+                </span>
+            </span>
+        </span>
+    </div>
+
+    <% if (loggedin) { %>
+    <div id="admin-buttons">
+        <div class="mdl-layout-spacer"></div>
+        <div class="mdl-layout-spacer"></div>
+        <button id="siteEditButton" onclick="toggleSiteEdit(true)" class="mdl-button mdl-js-button mdl-button--raised editButton">EDIT</button>
+        <div class="mdl-layout-spacer"></div>
+        <form id="deleteForm" action="/deletesite" method="POST">
+            <input hidden="true" name="idkey" value="<%= data._id %>" type="text"></input>
+            <button type="button" class="mdl-button mdl-js-button mdl-button--raised deleteButton" onclick="deleteItem(deleteForm)">DELETE</button>
+        </form>
+    </div>
+    <% } %>
+</div>
+<% } %>
+
+
+<!-- Editable Mode -->
+
+<div class="edit-mode <% if (edit) { %> active <% } %> ">
+ <% if (data.images && data.images.length != "") { %>
+        <div class="image-container">
+            <ul id="edit_slider">
+                <% for (var n = 0; n < data.images.length; n++) { %> 
+                    <li> 
+                        <img class="sidebar-image" src="<%= data.images[n] %>" style="width:100%" />
+                        <div class="image-overlay">
+                            <button class="img-remover mdl-button mdl-js-button mdl-button--icon mdl-button--colored" value="<%= data.images[n] %>">
+                                <i class="img-remover-icon material-icons">close</i>
+                            </button>
+                        </div>
+                    </li>
+                <% } %> 
+            </ul>
+            <button id="editPrevButton" onclick="editPrevImage()" class="image-nav-button img-nav-left mdl-button mdl-js-button mdl-button--raised"><i class="material-icons">keyboard_arrow_left</i></button>
+            <button id="editNextButton" onclick="editNextImage()" class="image-nav-button img-nav-right mdl-button mdl-js-button mdl-button--raised"><i class="material-icons">keyboard_arrow_right</i></button>
+        </div>
+    <% } %>
+   
+
+    <div class="sidebar-content">
+        <!-- Create form -->
+        <% if (newMode) { %>
+        <form id="createForm" onsubmit="submitCreateForm(event); return false;" enctype="multipart/form-data">
+        
+        <!-- Edit form -->
+        <% } else { %>
+        <form id="editForm" onsubmit="submitEditForm(event); return false;">
+        <% } %>
+
+            <!-- Super Ugly Form -->
+            <div class="image-uploader">
+                <i class="material-icons">add_a_photo</i>
+                <label>Upload Pictures : </label>
+                <input type="File" name="customFile" multiple />
+            </div>
+
+            <div class="site-name-input mdl-textfield mdl-js-textfield">
+                <input name="name" placeholder="Battlesite Name" class="mdl-textfield__input" value="<%= data.name %>" /> 
+            </div>
+
+            <textarea class="site-descript-input site-paragraph mdl-textfield__input" placeholder="Enter a description here..." rows=10 cols=70 name="misc"><%= data.misc %></textarea>
+            <hr />
+
+            <div class="file-uploaders">
+                <div class="uploader-container">
+                    <div class="uploader public-uploader">
+                        <i class="material-icons upload-icon">file_upload</i>
+                        <label>Add Public PDF Files: </label>
+                        <input type="File" name="pdfFilespublic" multiple />
+                    </div>
+                </div>
+                <div class="uploader-container">
+                    <div class="uploader private-uploader">
+                        <i class="material-icons upload-icon">file_upload</i>
+                        <label>Add Private PDF Files: </label>
+                        <input type="File" name="pdfFilesprivate" multiple />
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdf-list">
+                <% if (data.pdf && data.pdf.length != "") { %>
+                    <h6>Associated files:</h6>
+                    <ul class="pdf-list mdl-list mdl-list__item--two-line">
+                    <% for(var n = 0; n < data.pdf.length; n++) { %>
+                        <% var isPublic = data.pdfview[n] %>
+                        <% if ( (isPublic) || (loggedin) ) { %>
+                            <li class="mdl-list__item <% if (!isPublic) { %> private <% } %>" >
+                                <span class="mdl-list__item-primary-content">
+                                    <i class="material-icons pdf-icon">picture_as_pdf</i>
+                                    <a href="pdf/<%= data.pdf[n] %>" target="_blank">
+                                        <%= data.pdf[n] %>
+                                    </a>
+                                    <span class="mdl-list__item-sub-title">
+                                        <% if (isPublic) { %> 
+                                            <span>Public file</span>
+                                        <% } else { %>
+                                            <span>Private file</span>
+                                        <% } %>
+                                    </span>
+                                </span>
+                                <span class="mdl-list__item-secondary-content">
+                                    <button class="pdf-remover mdl-button mdl-js-button mdl-button--icon" value="<%= data.pdf[n] %>">
+                                        <i class="material-icons">close</i>
+                                    </button>
+                                </span>
+                            </li>
+                        <% } %>
+                    <% } %>
+                    </ul>
+                <% } %>
+            </div>
+
+            <div class="site-loc-input">
+                <hr />
+                <label>Use UTM</label>
+                <input type="radio" name="radio" value="utm" checked="true" onclick="toggleCoordFormat('utm','latlong')" />
+                <label>Use Lat/Long</label>
+                <input type="radio" name="radio" value="latlong" onclick="toggleCoordFormat('latlong','utm')" />
+                <hr />
+                <div id="utm">
+                    <table>
+                        <tr>
+                            <td>
+                                <label>Enter Zone: </label>
+                            </td>
+                            <td>
+                                <input type="text" name="zone" />
+                            </td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <label>Enter Easting: </label>
+                            </td>
+                            <td>
+                                <input type="text" name="easting" />
+                            </td>
+                        </tr>
+                         <tr>
+                            <td>
+                               <label>Enter Northing: </label>
+                            </td>
+                            <td>
+                                <input type="text" name="northing" />
+                            </td>
+                        </tr>
+                    </table>                   
+                </div>
+                <div id="latlong" style="display:none">
+                    <table>
+                        <tr>
+                            <td>
+                                <label>Enter Site Latitude: </label>
+                            </td>
+                            <td>
+                                <input type="text" name="Latitude" value="<%= data.lat %>" />
+                            </td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <label>Enter Site Longitude: </label>
+                            </td>
+                            <td>
+                                <input type="text" name="Longitude" value="<%= data.lng %>" />
+                            </td>
+                        </tr>
+                    </table>                 
+                </div>
+                <div id="publicCheck">
+                    Check to Make Private:
+                    <% if(data.isPublic) { %>
+                    <input id="checkBox" type="checkbox" name="pubCheck">
+                    <% } else { %>
+                    <input id="checkBox" type="checkbox" name="pubCheck" checked="<%= data.isPublic %>">
+                    <% } %>
+                </div>
+                <hr />  
+            </div>   
+
+            <% if (!newMode) { %>
+            <input id="currentSite" hidden="true" name="idkey" value="<%= data._id %>" type="text"></input>        
+            <% } %>
+            
+            <div id="admin-buttons">
+                <div class="mdl-layout-spacer"></div>
+
+                <% if (newMode) { %>
+                <input type="submit" value="SUBMIT" class="submit-create-button mdl-button mdl-js-button mdl-button--raised createButton" />
+                
+                <% } else { %>
+                <input type="submit" value="SAVE" class="mdl-button mdl-js-button mdl-button--raised editButton" />
+                <div class="mdl-layout-spacer"></div>
+                <button onclick="toggleSiteEdit(false)" type="button" class="mdl-button mdl-js-button mdl-button--raised deleteButton">CANCEL</button>
+                <% } %>
+            </div> 
+
+        </form>   
+    </div>    
+</div>
+
+<script>
+var current_image = 0;
+var numOfImages = 0;
+var viewModeImages = [];
+var editModeImages = [];
+
+
+// Function to Initialize View Mode
+function initViewMode(){
+
+        // Get the images
+    var imageUl = document.getElementById('view_slider');
+    if (imageUl != null) {
+        viewModeImages = imageUl.children;
+
+        // Find the image length
+    numOfImages = viewModeImages.length;
+    current_image = 0;
+
+        // hide all pictures but the first one
+    for(var i = 1; i < numOfImages; i++){
+        viewModeImages[i].style.display = "none";
+    }
+}
+
+    // Function to go to next image
+function viewNextImage(){
+        
+        // If we are at the last image loop around
+    if(current_image == numOfImages-1){
+        viewModeImages[current_image].style.display = "none";
+        viewModeImages[0].style.display = "";
+        current_image = 0;
+    } else {
+            // Otherwise change active image to next one in array
+        viewModeImages[current_image].style.display = "none";
+        current_image++;
+        viewModeImages[current_image].style.display = "";
+    }
+}
+
+    // Function to go to last image
+function viewPrevImage(){
+
+        // If we are at the first image loop to last one
+    if(current_image == 0){
+        viewModeImages[current_image].style.display = "none";
+        viewModeImages[numOfImages-1].style.display = "";
+        current_image = numOfImages-1;
+    } else {
+            // Otherwise just go to the one before it in the arary
+        viewModeImages[current_image].style.display = "none";
+        current_image--;
+        viewModeImages[current_image].style.display = "";
+    }
+}
+
+    // Function start up edit mode
+function initEditMode(){
+        
+        // Get the edit slider
+    var imageUl = document.getElementById('edit_slider');
+    if (imageUl != null) {
+        editModeImages = imageUl.children;
+
+        numOfImages = editModeImages.length;
+        current_image = 0;
+
+        // Hide all but the first image
+    for(var i = 1; i < numOfImages; i++){
+        editModeImages[i].style.display = "none";
+    }
+}
+
+    // Function, same as view next image but for edit mode
+function editNextImage(){
+    if(current_image == numOfImages-1){
+        editModeImages[current_image].style.display = "none";
+        editModeImages[0].style.display = "";
+        current_image = 0;
+    } else {
+        editModeImages[current_image].style.display = "none";
+        current_image++;
+        editModeImages[current_image].style.display = "";
+    }
+}
+
+    // Function, same as view prev image but for edit mode
+function editPrevImage(){
+    if(current_image == 0){
+        editModeImages[current_image].style.display = "none";
+        editModeImages[numOfImages-1].style.display = "";
+        current_image = numOfImages-1;
+    } else {
+        editModeImages[current_image].style.display = "none";
+        current_image--;
+        editModeImages[current_image].style.display = "";
+    }
+}
+
+</script>

@@ -1,0 +1,31 @@
+<!-- 
+        nav.ejs
+        Navigation bar
+-->
+
+<!-- Hide the slide bars around nav section -->
+<style>
+	.mdl-layout__drawer {
+		overflow: hidden;
+		overflow-y: hidden;
+	}
+</style>
+
+<div class="demo-layout mdl-layout mdl-js-layout">
+    <header class="demo-header mdl-layout__header mdl-color--blue-grey-900 mdl-color-text--grey-50">
+    <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title"><%= title %></span>
+        <div class="mdl-layout-spacer"></div>
+        <div class="material-icons mdl-badge" id="right-bar-btn">format_list_bulleted</div>
+    </div> <!-- End header row -->
+    </header>
+    
+    <div class="demo-drawer mdl-layout__drawer mdl-color-text--blue-grey-50">
+    <header class="demo-drawer-header">
+    </header>
+    <nav class="demo-navigation mdl-navigation">
+        <a class="mdl-navigation__link mdl-button  mdl-js-button mdl-js-ripple-effect" href="/"><i class="material-icons" role="presentation">map</i></a>
+        <a class="mdl-navigation__link mdl-button  mdl-js-button mdl-js-ripple-effect" href="/admin"><i class="material-icons" role="presentation">lock</i></a>
+        <a class="mdl-navigation__link mdl-button  mdl-js-button mdl-js-ripple-effect" href="/account"><i class="material-icons" role="presentation">person</i></a>
+    </nav>
+</div>

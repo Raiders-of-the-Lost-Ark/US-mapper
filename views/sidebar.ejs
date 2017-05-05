@@ -1,0 +1,116 @@
+<!-- 
+        sidebar.ejs
+        Sidebar (the smaller one) containing battlesite search features
+-->
+
+<div id="sidebar" class="mdl-layout__drawer-right mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+    <header class="demo-drawer-header">
+    </header>
+    <nav class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
+
+        <!-- Expandable Textfield -->
+            <form action="#" class="sidebar-form" onkeypress="return event.keyCode != 13;">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+                <label class="mdl-button mdl-js-button mdl-button--icon" for="sample6">
+                <i class="material-icons">search</i>
+                </label>
+                <div class="mdl-textfield__expandable-holder">
+                <input class="mdl-textfield__input" id="sample6" autocomplete="off" placeholder="Search battlesites..." title="Type Query Here" type="text">
+                <label class="mdl-textfield__label" for="sample-expandable">Expandable Input</label>
+                </div>
+            </div>
+            </form>
+        <!-- List all the sites that should be showing up (based on viewer logged in state) -->
+        <ul id="listed-sites"> 
+            <% for (var ind in sites) { %>         
+                <% if(sites[ind].isPublic || loggedin) { %>      
+                    <li class="listed">
+                        <a href="#" class="listText" onClick="selectMarker(<%- ind -%>)">
+                            <%- sites[ind].name -%>
+                        </a>
+                    </li>
+                <% } %>
+            <% } %>
+        </ul>
+
+        <div class="mdl-layout-spacer"></div>
+
+        <button class="right-bar-closer mdl-button mdl-js-button mdl-button--icon">
+        <i class="material-icons">keyboard_arrow_right</i>
+        </button>
+    </nav>
+</div>
+<script>
+
+    // access search bar and site list
+var searchBar = document.getElementById("sample6");
+var siteList = document.getElementById("listed-sites");
+
+    // add a listener that takes place whenever someone types a letter
+searchBar.addEventListener("keyup", function() {filterList(this, siteList)} );
+
+    // Function that activates when the listener is called
+function filterList(input, list) {
+    var filter = input.value.toUpperCase();
+    var items = list.getElementsByTagName("li");
+
+        // search function
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
+            items[i].style.display = "";
+        } else {
+            items[i].style.display = "none";
+        }   
+    }
+}
+
+    // Function to display the list of states in a county
+function countyListDisplay(incList){
+    
+        // get the list of sites in the sidebar
+    var items = siteList.getElementsByTagName("li");
+    var listOfIndex = [];
+
+        // if we didn't find any items just keep displaying them all
+    if(incList.length == 0){
+        for(var i = 0; i < items.length; i++){
+            items[i].style.display = "none";
+        }
+    } else {
+            // search for items that are in the county and the side bar
+        for (var i = 0; i < items.length; i++){
+            for(var j = 0; j < incList.length; j++){
+                
+                var temp = String(items[i].innerText);
+                temp = temp.replace(/(\r\n|\n|\r)/gm,"");
+                if(temp == incList[j].name){
+                    listOfIndex.push(i);
+                    break;
+                } 
+            }
+        }
+    }
+
+    for(var i = 0; i < items.length; i++){
+        items[i].style.display = "none";
+    }
+
+        // display only ones we found
+    for(var i = 0; i < items.length; i++){
+        for(var j = 0; j < listOfIndex.length; j++){
+            if(listOfIndex[j] == i){
+                items[i].style.display = "";
+            }
+        }
+    }
+}
+
+    // This functiopn resets the sidebar to display all of the items
+function resetDisplayList(){
+    var items = siteList.getElementsByTagName("li");
+    for(var i = 0; i < items.length; i++){
+        items[i].style.display = "";
+    }
+}
+
+</script>

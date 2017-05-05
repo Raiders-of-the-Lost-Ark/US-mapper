@@ -1,0 +1,14 @@
+{
+  "name": "node-api",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "1.17.1",
+    "ejs": "~2.5.2",
+    "express": "4.15.2",
+    "express-ejs-layouts": "^2.3.0",
+    "express-fileupload": "^0.1.2",
+    "express-session": "1.15.2",
+    "mongodb": "2.2.19",
+    "mongoose": "4.9.1"
+  }
+}
